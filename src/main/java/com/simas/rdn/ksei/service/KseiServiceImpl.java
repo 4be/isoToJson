@@ -44,7 +44,6 @@ public class KseiServiceImpl implements KseiService {
     private String rdn_ip2;
 
     public Object sendValidate(KseiReqBatch kseiReqBatch) {
-
         Integer tmp = 0;
         Date date = new Date();
         SimpleDateFormat DateFor = new SimpleDateFormat("yyyyMMddhhmm");
@@ -93,9 +92,7 @@ public class KseiServiceImpl implements KseiService {
                     kseiRequestadd.setAccountNumber(accountNumber);
                     kseiReqlist.put("detailData" + i, kseiRequestadd);
 
-
                     List<String> ksei = kseiRepo.findAckData(sidNumber, participantID, accountNumber);
-
 
                     if (kseiRepo.existsKseiSystemByParticipantId(participantID)) {
                         Part = "Valid";
@@ -200,6 +197,7 @@ public class KseiServiceImpl implements KseiService {
             logger.info("KseiSystem : Incorrect Body Request");
             return new ReceiveStatus(String.valueOf(status));
         } else {
+            logger.info("KseiSystem : Successfully received data, Response Code = " + status);
             Integer totalData = kseiReqBatchStatic.getQueryData().size();
             Map<String, KseiRequestStatic> kseiRequestMap = new TreeMap<>();
             Map<String, KseiResponseStatic> recordDetail = new TreeMap<>();
@@ -269,15 +267,10 @@ public class KseiServiceImpl implements KseiService {
             }
             return new ReceiveStatus(String.valueOf(status));
 
-
         }
 
 
     }
-
-
-
-
 
     public String validatealphabet(String input) {
         return input.replaceAll("[^a-zA-Z0-9 ]", "");
