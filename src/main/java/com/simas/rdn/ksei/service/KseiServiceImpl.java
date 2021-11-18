@@ -1,6 +1,8 @@
 package com.simas.rdn.ksei.service;
 
+import com.google.gson.Gson;
 import com.simas.rdn.ksei.models.entity.KseiSystem;
+import com.simas.rdn.ksei.models.entity.RequestQueue;
 import com.simas.rdn.ksei.models.request.KseiReqBatch;
 import com.simas.rdn.ksei.models.request.KseiReqBatchStatic;
 import com.simas.rdn.ksei.models.request.KseiRequest;
@@ -12,6 +14,7 @@ import com.simas.rdn.ksei.models.response.payload.KseiResponse;
 import com.simas.rdn.ksei.models.response.payload.KseiResponseFailed;
 import com.simas.rdn.ksei.models.response.payload.KseiResponseStatic;
 import com.simas.rdn.ksei.repository.KseiRepo;
+import com.simas.rdn.ksei.repository.RequestRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +38,9 @@ public class KseiServiceImpl implements KseiService {
     @Autowired
     KseiRepo kseiRepo;
 
+    @Autowired
+    RequestRepo requestRepo;
+
     Logger logger = LoggerFactory.getLogger(KseiServiceImpl.class);
 
     @Value("${rdn.service.url}")
@@ -42,6 +48,8 @@ public class KseiServiceImpl implements KseiService {
 
     @Value("${rdn.service2.url}")
     private String rdn_ip2;
+
+    Gson JsonGas = new Gson();
 
     public Object sendValidate(KseiReqBatch kseiReqBatch) {
         Integer tmp = 0;
@@ -54,12 +62,12 @@ public class KseiServiceImpl implements KseiService {
         Map<String, KseiRequest> queryData = kseiReqBatch.getQueryData();
 
         if (totalData == null || queryData == null) {
-            logger.info("KseiSystem : Failed receive data, Response Code = " + status);
-            logger.info("KseiSystem : Incorrect Body Request");
+            logger.error("ServiceValidation : Failed Receive RequestData, Response Code = " + status);
+            logger.error("ServiceValidation : Incorrect Body Request");
             return new ReceiveStatus(String.valueOf(status));
         } else {
             status += 1;
-            logger.info("KseiSystem : Successfully received data, Response Code = " + status);
+            logger.info("ServiceValidation : Successfully Received RequestData, Response Code = " + status);
             Map<String, KseiRequest> kseiReqlist = new TreeMap();
             Map<String, Object> recordDetail = new TreeMap<>();
             for (int i = 1; i <= kseiReqBatch.getQueryData().size(); i++) {
@@ -110,9 +118,9 @@ public class KseiServiceImpl implements KseiService {
                         kseiSystem.setParticipantId("Valid");
                         kseiSystem.setSid("Valid");
                         kseiSystem.setAccountNumber("Valid");
-                        logger.info("Request DetailData" + i + " = ExternalReference : " + ExternalReference + " | ParticipantId : " + participantID + " | SidNumber : " + sidNumber + " | AccountNumber : " + accountNumber);
 
                         if (ksei.isEmpty()) {
+                            logger.info("DetailData" + i + " = 'NotValid' | ExternalReference : " + ExternalReference + " | ParticipantId : " + participantID + " | SidNumber : " + sidNumber + " | AccountNumber : " + accountNumber);
                             kseiSystem.setParticipantId("NotValid");
                             kseiSystem.setSid("NotValid");
                             kseiSystem.setAccountNumber("NotValid");
@@ -120,11 +128,11 @@ public class KseiServiceImpl implements KseiService {
                             tmp = tmp + 1;
                             recordDetail.put("detailData" + i, res);
                         } else {
+                            logger.info("DetailData" + i + " = 'InvestorValid' | ExternalReference : " + ExternalReference + " | ParticipantId : " + participantID + " | SidNumber : " + sidNumber + " | AccountNumber : " + accountNumber);
                             kseiSystem.setInvestorName(ksei.get(0).split(",")[0]);
                             kseiSystem.setInvestorId(ksei.get(0).split(",")[1]);
                             kseiSystem.setNpwp(ksei.get(0).split(",")[2]);
                             kseiSystem.setPassport(ksei.get(0).split(",")[3]);
-
                             KseiResponse res = getKseiResponse(kseiSystem);
                             recordDetail.put("detailData" + i, res);
                         }
@@ -135,7 +143,7 @@ public class KseiServiceImpl implements KseiService {
                         kseiSystem.setParticipantId(Part);
                         kseiSystem.setSid(Sid);
                         kseiSystem.setAccountNumber(Acc);
-                        logger.info("Request DetailData" + i + " = ExternalReference : " + ExternalReference + " | ParticipantId : " + participantID + " | SidNumber : " + sidNumber + " | AccountNumber : " + accountNumber);
+                        logger.info("DetailData" + i + " = 'NotValid' | ExternalReference : " + ExternalReference + " | ParticipantId : " + participantID + " | SidNumber : " + sidNumber + " | AccountNumber : " + accountNumber);
                         KseiResponseFailed res = getKseiResponFailed(kseiSystem);
                         tmp = tmp + 1;
                         recordDetail.put("detailData" + i, res);
@@ -146,7 +154,7 @@ public class KseiServiceImpl implements KseiService {
                         kseiSystem.setParticipantId(Part);
                         kseiSystem.setSid(Sid);
                         kseiSystem.setAccountNumber(Acc);
-                        logger.info("Request DetailData" + i + " = ExternalReference : " + ExternalReference + " | ParticipantId : " + participantID + " | SidNumber : " + sidNumber + " | AccountNumber : " + accountNumber);
+                        logger.info("DetailData" + i + " = 'NotValid' | ExternalReference : " + ExternalReference + " | ParticipantId : " + participantID + " | SidNumber : " + sidNumber + " | AccountNumber : " + accountNumber);
                         KseiResponseFailed res = getKseiResponFailed(kseiSystem);
                         tmp = tmp + 1;
                         recordDetail.put("detailData" + i, res);
@@ -162,20 +170,32 @@ public class KseiServiceImpl implements KseiService {
             ResponseAck responseAcklog = new ResponseAck("BSIM", datez, totalQue.toString(), tmp.toString(), recordDetail);
             logger.info("Response Ack =  " + responseAcklog);
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            try {
-                HttpEntity<?> request = new HttpEntity<>(responseAcklog, headers);
-                ResponseEntity<String> response = new RestTemplate()
-                        .postForEntity(rdn_ip, request, String.class);
-                if (response.getStatusCode().toString().equals("200 OK")) {
-                    logger.info("Ack Sent Successfully!");
-                }
 
-            } catch (Exception e) {
-                logger.info("Failed to Sent Ack!");
-            }
+//            Buat Callback langsung
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.setContentType(MediaType.APPLICATION_JSON);
+//            try {
+//                HttpEntity<?> request = new HttpEntity<>(responseAcklog, headers);
+//                ResponseEntity<String> response = new RestTemplate()
+//                        .postForEntity(rdn_ip, request, String.class);
+//                if (response.getStatusCode().toString().equals("200 OK")) {
+//                    logger.info("Successfully sent Ack!");
+//                }
+//
+//            } catch (Exception e) {
+//                logger.error("Failed to Sent Ack!");
+//            }
+
+
+            RequestQueue requestQueue = new RequestQueue();
+            requestQueue.setRequest(JsonGas.toJson(responseAcklog));
+            requestQueue.setType("Validation");
+            requestQueue.setValidationSent(false);
+            requestRepo.save(requestQueue);
+            logger.info("ServiceValidation : New Request AckValidation Added to Queue\n");
+
             return new ReceiveStatus(String.valueOf(status));
+
         }
 
 
@@ -193,11 +213,11 @@ public class KseiServiceImpl implements KseiService {
 
         if (queryData == null || batchreference == null) {
             status += 1;
-            logger.info("KseiSystem : Failed receive data, Response Code = " + status);
-            logger.info("KseiSystem : Incorrect Body Request");
+            logger.error("ServiceStatic : Failed receive RequestData, Response Code = " + status);
+            logger.error("ServiceStatic : Incorrect Body Request");
             return new ReceiveStatus(String.valueOf(status));
         } else {
-            logger.info("KseiSystem : Successfully received data, Response Code = " + status);
+            logger.info("ServiceStatic : Successfully received RequestData, Response Code = " + status);
             Integer totalData = kseiReqBatchStatic.getQueryData().size();
             Map<String, KseiRequestStatic> kseiRequestMap = new TreeMap<>();
             Map<String, KseiResponseStatic> recordDetail = new TreeMap<>();
@@ -230,16 +250,14 @@ public class KseiServiceImpl implements KseiService {
                 List<String> findksei = kseiRepo.findAckData(sidNumber, participantID, accountNumber);
 
                 if (!findksei.isEmpty()) {
-                    logger.info("RequestStatic detailData" + i + " = ExternalReference : " + ExternalReference + " | ParticipantId : " + participantID + " | SidNumber : " + sidNumber + " | AccountNumber : " + accountNumber);
-                    logger.info("Data Valid in ksei_system ExternalReference = " + kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getExternalReference());
+                    logger.info("DetailData" + i + " = 'DataValid' | ExternalReference : " + ExternalReference + " | ParticipantId : " + participantID + " | SidNumber : " + sidNumber + " | AccountNumber : " + accountNumber);
                 } else {
                     kseiSystem.setExternalReference(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getExternalReference());
                     kseiSystem.setParticipantID(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getParticipantID());
                     kseiSystem.setSidNumberData(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getSidNumber());
                     kseiSystem.setAccountNumberData(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getAccountNumber());
                     kseiSystem.setActivityData(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getActivity());
-                    logger.info("RequestStatic detailData" + i + " = ExternalReference : " + ExternalReference + " | ParticipantId : " + participantID + " | SidNumber : " + sidNumber + " | AccountNumber : " + accountNumber);
-                    logger.info("Invalid Data found ksei_system ExternalReference = " + kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getExternalReference());
+                    logger.info("DetailData" + i + " = 'InvalidDataStatic' | ExternalReference : " + ExternalReference + " | ParticipantId : " + participantID + " | SidNumber : " + sidNumber + " | AccountNumber : " + accountNumber);
                     tmp = tmp + 1;
                     recordDetail.put("detailData" + tmp, kseiSystem);
                 }
@@ -252,19 +270,33 @@ public class KseiServiceImpl implements KseiService {
             ResponseAckStatic responseAckStaticlog = new ResponseAckStatic("BSIM3", batchreference, datez, totalQue.toString(), tmp.toString(), recordDetail);
             logger.info("Response AckStatic =  " + responseAckStaticlog);
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            try {
-                HttpEntity<?> request = new HttpEntity<>(responseAckStaticlog, headers);
-                ResponseEntity<String> response = new RestTemplate()
-                        .postForEntity(rdn_ip2, request, String.class);
-                if (response.getStatusCode().toString().equals("200 OK")) {
-                    logger.info("AckStatic Sent Successfully!");
-                }
+//            Buat Callback langsung
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.setContentType(MediaType.APPLICATION_JSON);
+//            try {
+//                HttpEntity<?> request = new HttpEntity<>(responseAckStaticlog, headers);
+//                ResponseEntity<String> response = new RestTemplate()
+//                        .postForEntity(rdn_ip2, request, String.class);
+//                if (response.getStatusCode().toString().equals("200 OK")) {
+//                    logger.info("AckStatic Sent Successfully!");
+//                }
+//
+//            } catch (Exception e) {
+//                logger.error("Failed to Sent AckStatic!");
+//            }
 
-            } catch (Exception e) {
-                logger.info("Failed to Sent AckStatic!");
+            if (!responseAckStaticlog.getInvalidRecordDetail().isEmpty()) {
+                RequestQueue requeststatic = new RequestQueue();
+                requeststatic.setRequest(JsonGas.toJson(responseAckStaticlog));
+                requeststatic.setType("Static");
+                requeststatic.setValidationSent(false);
+                requestRepo.save(requeststatic);
+                logger.info("ServiceStatic : New Request AckStatic Added to Queue\n");
+            } else {
+                logger.info("ServiceStatic : All Data Valid in Ksei, No Request added\n");
             }
+
+
             return new ReceiveStatus(String.valueOf(status));
 
         }
