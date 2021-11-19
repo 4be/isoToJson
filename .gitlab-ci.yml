@@ -1,0 +1,9 @@
+include:
+  - project: devops/ci-templates
+    ref: &include_ref 1.0.0-SNAPSHOT
+    file: /templates/java-service.gitlab-ci.yml
+
+
+variables:
+  CI_PROJECT_NAMESPACE: general
+  FILE_TAG: *include_ref
