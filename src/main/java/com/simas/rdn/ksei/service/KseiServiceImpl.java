@@ -19,12 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -280,8 +275,9 @@ public class KseiServiceImpl implements KseiService {
                 ResponseAckStatic responseAckStaticlog = new ResponseAckStatic("BSIM3", batchreference, datez, totalQue.toString(), tmp.toString(), recordDetail);
                 logger.info("Response =>  " + responseAckStaticlog);
 
-                kseiRepo.saveAll(kseiList);
-                logger.info("ServiceStatic : Successfully update data from DataValid");
+                if(!kseiRepo.saveAll(kseiList).isEmpty()){
+                    logger.info("ServiceStatic : Successfully update data from DataValid");
+                }
 
 
                 if (!responseAckStaticlog.getInvalidRecordDetail().isEmpty()) {
@@ -297,7 +293,7 @@ public class KseiServiceImpl implements KseiService {
 
 
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Something Wrong, Failed to validateACK");
 
             }
 
