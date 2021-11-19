@@ -15,7 +15,12 @@ public interface KseiRepo extends JpaRepository<KseiSystem,Long> {
 
     Boolean existsKseiSystemByAccountNumber(String accountNumber);
 
-    KseiSystem findKseiSystemBySid(String sid);
+    Boolean existsKseiSystemById(Long id);
+
+    KseiSystem findKseiSystemById(Long id);
+//
+//    @Query(value = "UPDATE SET ksei_system SET participantName=:participantName WHERE tn.sid=:sid AND tn.participant_id=:peid AND tn.account_number=:an", nativeQuery = true);
+//    void List<KseiSystem> saveMod(@PathParam("participantName") String participantName,@PathParam("sid") String sid, @PathParam("peid") String peid, @PathParam("an") String an);
 
     @Query(value = "SELECT COUNT(*) FROM ksei_system AS tn WHERE tn.account_number=:an", nativeQuery = true)
     public List<String> findByAccountNumber(@PathParam("an") String an);
@@ -28,5 +33,8 @@ public interface KseiRepo extends JpaRepository<KseiSystem,Long> {
 
     @Query(value = "SELECT investor_name,investor_id,npwp,passport,bank_code FROM ksei_system AS tn WHERE tn.sid=:sid AND tn.participant_id=:peid AND tn.account_number=:an", nativeQuery = true)
     public List<String> findAckData(@PathParam("sid") String sid, @PathParam("peid") String peid, @PathParam("an") String an);
+
+    @Query(value = "SELECT * FROM ksei_system AS tn WHERE tn.sid=:sid AND tn.participant_id=:peid AND tn.account_number=:an", nativeQuery = true)
+    public KseiSystem findAckData2(@PathParam("sid") String sid, @PathParam("peid") String peid, @PathParam("an") String an);
 
 }

@@ -27,10 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 @Service
 public class KseiServiceImpl implements KseiService {
@@ -164,12 +161,11 @@ public class KseiServiceImpl implements KseiService {
             }
             String valtotalData = validatealphabet(kseiReqBatch.getTotalData());
             KseiReqBatch logreq = new KseiReqBatch(valtotalData, kseiReqlist);
-            logger.info("Request Detail = " + logreq);
+            logger.info("Request => " + logreq);
 
             Integer totalQue = kseiReqBatch.getQueryData().size();
             ResponseAck responseAcklog = new ResponseAck("BSIM", datez, totalQue.toString(), tmp.toString(), recordDetail);
-            logger.info("Response Ack =  " + responseAcklog);
-
+            logger.info("Response =>  " + responseAcklog);
 
 //            Buat Callback langsung
 //            HttpHeaders headers = new HttpHeaders();
@@ -206,6 +202,7 @@ public class KseiServiceImpl implements KseiService {
         Integer tmp = 0;
         Date date = new Date();
         SimpleDateFormat DateFor = new SimpleDateFormat("yyyyMMddhhmm");
+        SimpleDateFormat convertDate = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss");
         String datez = DateFor.format(date);
         String batchreference = kseiReqBatchStatic.getBatchReference();
         Integer status = 0;
@@ -218,57 +215,92 @@ public class KseiServiceImpl implements KseiService {
             return new ReceiveStatus(String.valueOf(status));
         } else {
             logger.info("ServiceStatic : Successfully received RequestData, Response Code = " + status);
-            Integer totalData = kseiReqBatchStatic.getQueryData().size();
-            Map<String, KseiRequestStatic> kseiRequestMap = new TreeMap<>();
-            Map<String, KseiResponseStatic> recordDetail = new TreeMap<>();
-            for (int i = 1; i <= kseiReqBatchStatic.getQueryData().size(); i++) {
+            try {
+                List<KseiSystem> kseiList = new ArrayList<>();
+                Map<String, KseiRequestStatic> kseiRequestMap = new TreeMap<>();
+                Map<String, KseiResponseStatic> recordDetail = new TreeMap<>();
+                for (int i = 1; i <= kseiReqBatchStatic.getQueryData().size(); i++) {
 
-                KseiResponseStatic kseiSystem = new KseiResponseStatic();
-                Long ExternalReference = Long.valueOf(validatealphabet(String.valueOf(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getExternalReference())));
-                String participantID = validatealphabet(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getParticipantID());
-                String sidNumber = validatealphabet(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getSidNumber());
-                String accountNumber = validatealphabet(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getAccountNumber());
-                String participantName = validatealphabet(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getParticipantName());
-                String investorName = validatealphabet(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getInvestorName());
-                String bankAccountNumber = validatealphabet(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getBankAccountNumber());
-                String bankCode = validatealphabet(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getBankCode());
-                String activity = validatealphabet(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getActivity());
-                String activitydate = kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getActivityDate();
-                KseiRequestStatic kseiRequestadd = new KseiRequestStatic();
-                kseiRequestadd.setExternalReference(ExternalReference);
-                kseiRequestadd.setParticipantID(participantID);
-                kseiRequestadd.setParticipantName(participantName);
-                kseiRequestadd.setInvestorName(investorName);
-                kseiRequestadd.setSidNumber(sidNumber);
-                kseiRequestadd.setAccountNumber(accountNumber);
-                kseiRequestadd.setBankAccountNumber(bankAccountNumber);
-                kseiRequestadd.setBankCode(bankCode);
-                kseiRequestadd.setActivityDate(activitydate);
-                kseiRequestadd.setActivity(activity);
-                kseiRequestMap.put("detailData" + i, kseiRequestadd);
+                    KseiResponseStatic kseiSystem = new KseiResponseStatic();
+                    Long ExternalReference = Long.valueOf(validatealphabet(String.valueOf(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getExternalReference())));
+                    String participantID = validatealphabet(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getParticipantID());
+                    String sidNumber = validatealphabet(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getSidNumber());
+                    String accountNumber = validatealphabet(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getAccountNumber());
+                    String participantName = validatealphabet(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getParticipantName());
+                    String investorName = validatealphabet(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getInvestorName());
+                    String bankAccountNumber = validatealphabet(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getBankAccountNumber());
+                    String bankCode = validatealphabet(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getBankCode());
+                    String activity = validatealphabet(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getActivity());
+                    String activitydate = kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getActivityDate();
+                    KseiRequestStatic kseiRequestadd = new KseiRequestStatic();
+                    kseiRequestadd.setExternalReference(ExternalReference);
+                    kseiRequestadd.setParticipantID(participantID);
+                    kseiRequestadd.setParticipantName(participantName);
+                    kseiRequestadd.setInvestorName(investorName);
+                    kseiRequestadd.setSidNumber(sidNumber);
+                    kseiRequestadd.setAccountNumber(accountNumber);
+                    kseiRequestadd.setBankAccountNumber(bankAccountNumber);
+                    kseiRequestadd.setBankCode(bankCode);
+                    kseiRequestadd.setActivityDate(activitydate);
+                    kseiRequestadd.setActivity(activity);
+                    kseiRequestMap.put("detailData" + i, kseiRequestadd);
 
-                List<String> findksei = kseiRepo.findAckData(sidNumber, participantID, accountNumber);
+                    List<String> findksei = kseiRepo.findAckData(sidNumber, participantID, accountNumber);
+                    KseiSystem kseiSystemUp = kseiRepo.findAckData2(sidNumber, participantID, accountNumber);
+                    SimpleDateFormat ae = new SimpleDateFormat("EEE LLL dd HH:mm:ss Z yyyy");
 
-                if (!findksei.isEmpty()) {
-                    logger.info("DetailData" + i + " = 'DataValid' | ExternalReference : " + ExternalReference + " | ParticipantId : " + participantID + " | SidNumber : " + sidNumber + " | AccountNumber : " + accountNumber);
+                    if (findksei.isEmpty()) {
+                        kseiSystem.setExternalReference(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getExternalReference());
+                        kseiSystem.setParticipantID(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getParticipantID());
+                        kseiSystem.setSidNumberData(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getSidNumber());
+                        kseiSystem.setAccountNumberData(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getAccountNumber());
+                        kseiSystem.setActivityData(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getActivity());
+                        logger.info("DetailData" + i + " = 'InvalidDataStatic' | ExternalReference : " + ExternalReference + " | ParticipantId : " + participantID + " | SidNumber : " + sidNumber + " | AccountNumber : " + accountNumber);
+                        tmp = tmp + 1;
+                        recordDetail.put("detailData" + tmp, kseiSystem);
+
+                    } else {
+
+                        logger.info("DetailData" + i + " = 'DataValid' | ExternalReference : " + ExternalReference + " | ParticipantId : " + participantID + " | SidNumber : " + sidNumber + " | AccountNumber : " + accountNumber + " | bankAccountNumber : " + bankAccountNumber + " | participantName : " + participantName + " | bankCode : " + bankCode + " | activity : " + activity + " | activitydate : " + activitydate);
+                        Date dateUp = ae.parse(activitydate);
+                        kseiSystemUp.setParticipantName(participantName);
+                        kseiSystemUp.setBankAccountNumber(bankAccountNumber);
+                        kseiSystemUp.setBankCode(bankCode);
+                        kseiSystemUp.setActivity(activity);
+                        kseiSystemUp.setActivityDate(dateUp);
+                        kseiList.add(kseiSystemUp);
+
+                    }
+
+                }
+                KseiReqBatchStatic logreq = new KseiReqBatchStatic(batchreference, kseiRequestMap);
+                logger.info("Request => " + logreq);
+
+                Integer totalQue = kseiReqBatchStatic.getQueryData().size();
+                ResponseAckStatic responseAckStaticlog = new ResponseAckStatic("BSIM3", batchreference, datez, totalQue.toString(), tmp.toString(), recordDetail);
+                logger.info("Response =>  " + responseAckStaticlog);
+
+                kseiRepo.saveAll(kseiList);
+                logger.info("ServiceStatic : Successfully update data from DataValid");
+
+
+                if (!responseAckStaticlog.getInvalidRecordDetail().isEmpty()) {
+                    RequestQueue requeststatic = new RequestQueue();
+                    requeststatic.setRequest(JsonGas.toJson(responseAckStaticlog));
+                    requeststatic.setType("Static");
+                    requeststatic.setValidationSent(false);
+                    requestRepo.save(requeststatic);
+                    logger.info("ServiceStatic : New Request AckStatic Added to Queue\n");
                 } else {
-                    kseiSystem.setExternalReference(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getExternalReference());
-                    kseiSystem.setParticipantID(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getParticipantID());
-                    kseiSystem.setSidNumberData(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getSidNumber());
-                    kseiSystem.setAccountNumberData(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getAccountNumber());
-                    kseiSystem.setActivityData(kseiReqBatchStatic.getQueryData().get(String.valueOf(i)).getActivity());
-                    logger.info("DetailData" + i + " = 'InvalidDataStatic' | ExternalReference : " + ExternalReference + " | ParticipantId : " + participantID + " | SidNumber : " + sidNumber + " | AccountNumber : " + accountNumber);
-                    tmp = tmp + 1;
-                    recordDetail.put("detailData" + tmp, kseiSystem);
+                    logger.info("ServiceStatic : All Data Valid in Ksei, No Request added\n");
                 }
 
-            }
-            KseiReqBatchStatic logreq = new KseiReqBatchStatic(batchreference, kseiRequestMap);
-            logger.info("Request Detail = " + logreq);
 
-            Integer totalQue = kseiReqBatchStatic.getQueryData().size();
-            ResponseAckStatic responseAckStaticlog = new ResponseAckStatic("BSIM3", batchreference, datez, totalQue.toString(), tmp.toString(), recordDetail);
-            logger.info("Response AckStatic =  " + responseAckStaticlog);
+            } catch (Exception e) {
+                e.printStackTrace();
+
+            }
+
 
 //            Buat Callback langsung
 //            HttpHeaders headers = new HttpHeaders();
@@ -284,19 +316,6 @@ public class KseiServiceImpl implements KseiService {
 //            } catch (Exception e) {
 //                logger.error("Failed to Sent AckStatic!");
 //            }
-
-            if (!responseAckStaticlog.getInvalidRecordDetail().isEmpty()) {
-                RequestQueue requeststatic = new RequestQueue();
-                requeststatic.setRequest(JsonGas.toJson(responseAckStaticlog));
-                requeststatic.setType("Static");
-                requeststatic.setValidationSent(false);
-                requestRepo.save(requeststatic);
-                logger.info("ServiceStatic : New Request AckStatic Added to Queue\n");
-            } else {
-                logger.info("ServiceStatic : All Data Valid in Ksei, No Request added\n");
-            }
-
-
             return new ReceiveStatus(String.valueOf(status));
 
         }
