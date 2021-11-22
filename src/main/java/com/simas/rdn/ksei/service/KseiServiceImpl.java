@@ -18,7 +18,6 @@ import com.simas.rdn.ksei.repository.RequestRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -34,12 +33,6 @@ public class KseiServiceImpl implements KseiService {
     RequestRepo requestRepo;
 
     Logger logger = LoggerFactory.getLogger(KseiServiceImpl.class);
-
-    @Value("${rdn.service.url}")
-    private String rdn_ip;
-
-    @Value("${rdn.service2.url}")
-    private String rdn_ip2;
 
     Gson JsonGas = new Gson();
 
