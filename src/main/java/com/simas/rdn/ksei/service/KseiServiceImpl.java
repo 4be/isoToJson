@@ -172,12 +172,12 @@ public class KseiServiceImpl implements KseiService {
 
 
             RequestQueue requestQueue = new RequestQueue();
-            requestQueue.setRequest(JsonGas.toJson(responseAcklog));
             requestQueue.setType("Validation");
+            requestQueue.setRequest(JsonGas.toJson(logreq));
+            requestQueue.setResponse(JsonGas.toJson(responseAcklog));
             requestQueue.setValidationSent(false);
             requestRepo.save(requestQueue);
             logger.info("ServiceValidation : New Request AckValidation Added to Queue\n");
-
             return new ReceiveStatus(String.valueOf(status));
 
         }
@@ -268,15 +268,15 @@ public class KseiServiceImpl implements KseiService {
                 ResponseAckStatic responseAckStaticlog = new ResponseAckStatic("BSIM3", batchreference, datez, totalQue.toString(), tmp.toString(), recordDetail);
                 logger.info("Response =>  " + responseAckStaticlog);
 
-                if(!kseiRepo.saveAll(kseiList).isEmpty()){
+                if (!kseiRepo.saveAll(kseiList).isEmpty()) {
                     logger.info("ServiceStatic : Successfully update data from DataValid");
                 }
 
-
                 if (!responseAckStaticlog.getInvalidRecordDetail().isEmpty()) {
                     RequestQueue requeststatic = new RequestQueue();
-                    requeststatic.setRequest(JsonGas.toJson(responseAckStaticlog));
                     requeststatic.setType("Static");
+                    requeststatic.setRequest(JsonGas.toJson(logreq));
+                    requeststatic.setResponse(JsonGas.toJson(responseAckStaticlog));
                     requeststatic.setValidationSent(false);
                     requestRepo.save(requeststatic);
                     logger.info("ServiceStatic : New Request AckStatic Added to Queue\n");

@@ -17,5 +17,17 @@ public class KseiResponse {
     private String investorNPWP;
     private String investorPassport;
 
-
+    @Override
+    public String toString() {
+        return "KseiResponse{" +
+                "relatedReferenceData:" + relatedReferenceData +
+                ", participantID:'" + participantID + '\'' +
+                ", sidNumberData:'" + sidNumberData + '\'' +
+                ", accountNumberData:'" + accountNumberData + '\'' +
+                ", investorName:'" + investorName + '\'' +
+                ", investorID='" + investorID + '\'' +
+                ", investorNPWP:'" + investorNPWP + '\'' +
+                ", investorPassport:'" + investorPassport + '\'' +
+                '}';
+    }
 }

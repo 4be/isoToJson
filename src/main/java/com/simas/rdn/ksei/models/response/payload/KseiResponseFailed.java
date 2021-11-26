@@ -19,10 +19,10 @@ public class KseiResponseFailed {
     @Override
     public String toString() {
         return "KseiResponseFailed{" +
-                "relatedReferenceData=" + relatedReferenceData +
-                ", participantID='" + participantID + '\'' +
-                ", sidNumberData='" + sidNumberData + '\'' +
-                ", accountNumberData='" + accountNumberData + '\'' +
+                "relatedReferenceData:" + relatedReferenceData +
+                ", participantID:'" + participantID + '\'' +
+                ", sidNumberData:'" + sidNumberData + '\'' +
+                ", accountNumberData:'" + accountNumberData + '\'' +
                 '}';
     }
 

@@ -16,10 +16,10 @@ public class KseiRequest {
     @Override
     public String toString() {
         return "KseiRequest{" +
-                "externalReference=" + externalReference +
-                ", participantID='" + participantID + '\'' +
-                ", sidNumber='" + sidNumber + '\'' +
-                ", accountNumber='" + accountNumber + '\'' +
+                "externalReference:" + externalReference +
+                ", participantID:'" + participantID + '\'' +
+                ", sidNumber:'" + sidNumber + '\'' +
+                ", accountNumber:'" + accountNumber + '\'' +
                 '}';
     }
 }

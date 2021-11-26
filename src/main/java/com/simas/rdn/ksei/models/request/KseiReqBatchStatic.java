@@ -14,8 +14,8 @@ public class KseiReqBatchStatic {
     @Override
     public String toString() {
         return "KseiReqBatchStatic{" +
-                "batchReference='" + batchReference + '\'' +
-                ", queryData=" + queryData +
+                "batchReference:'" + batchReference + '\'' +
+                ", queryData:'" + queryData +
                 '}';
     }
 }

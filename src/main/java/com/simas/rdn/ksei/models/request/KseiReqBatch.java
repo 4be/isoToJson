@@ -2,6 +2,7 @@ package com.simas.rdn.ksei.models.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.Map;
 
@@ -14,8 +15,8 @@ public class KseiReqBatch {
     @Override
     public String toString() {
         return "KseiReqBatch{" +
-                "totalData='" + totalData + '\'' +
-                ", queryData=" + queryData +
+                "totalData:'" + totalData + '\'' +
+                ", queryData:'" + queryData +
                 '}';
     }
 }

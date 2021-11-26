@@ -17,11 +17,14 @@ public class RequestQueue {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @Column(name = "type")
+    private String type;
+
     @Column(name = "request", columnDefinition = "TEXT")
     private String request;
 
-    @Column(name = "type")
-    private String type;
+    @Column(name = "response", columnDefinition = "TEXT")
+    private String response;
 
     @Column(name = "validationsent")
     private Boolean validationSent;

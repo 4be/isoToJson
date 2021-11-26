@@ -19,11 +19,11 @@ public class ResponseAck {
     @Override
     public String toString() {
         return "ResponseAck{" +
-                "bankCode='" + bankCode + '\'' +
-                ", reportTimestamp='" + reportTimestamp + '\'' +
-                ", totalRecord='" + totalRecord + '\'' +
-                ", invalidRecord='" + invalidRecord + '\'' +
-                ", recordDetail=" + recordDetail +
+                "bankCode:'" + bankCode + '\'' +
+                ", reportTimestamp:'" + reportTimestamp + '\'' +
+                ", totalRecord:'" + totalRecord + '\'' +
+                ", invalidRecord:'" + invalidRecord + '\'' +
+                ", recordDetail:" + recordDetail +
                 '}';
     }
 }
