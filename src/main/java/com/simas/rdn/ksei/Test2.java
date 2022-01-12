@@ -24,6 +24,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Enumeration;
@@ -34,7 +35,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class KseiValidateAckApplication {
+
 
 //    public static  void ewe(String filename, String algorithm) throws Exception {
 //        File f = new File(filename);
@@ -59,40 +60,39 @@ public class KseiValidateAckApplication {
 //        return kf.generatePrivate(spec);
 //    }
 
+//    public static PrivateKey getPemPrivateKey(String filename, String algorithm) throws Exception {
+//        File f = new File(filename);
+//        FileInputStream fis = new FileInputStream(f);
+//        DataInputStream dis = new DataInputStream(fis);
+//        byte[] keyBytes = new byte[(int) f.length()];
+//        dis.readFully(keyBytes);
+//        dis.close();
+//
+//        String temp = new String(keyBytes);
+//        String privKeyPEM = temp.replace("-----BEGIN PRIVATE KEY-----\n", "");
+//        privKeyPEM = privKeyPEM.replace("-----END PRIVATE KEY-----", "");
+//        System.out.println("temp key\n" + temp);
+//        System.out.println("Private key\n" + privKeyPEM);
+//
+//        // Base64 b64 = new Base64();
+//        Base64.Encoder encoder = Base64.getEncoder();
+//        // Encoding URL
+//        String eStr = encoder.encodeToString(temp.getBytes());
+//        System.out.println("Encoded result: " + eStr);
+//        // Getting decoder
+//        Base64.Decoder decoder = Base64.getDecoder();
+//        // Decoding URl
+//        String dStr = new String(decoder.decode(eStr));
+//
+//        System.out.println("Decode result : " + dStr);
+//
+//        byte[] eq = eStr.getBytes();
+//        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(eq);
+//        KeyFactory kf = KeyFactory.getInstance(algorithm);
+//        return kf.generatePrivate(spec);
+//    }
 
-    public static PrivateKey getPemPrivateKey(String filename, String algorithm) throws Exception {
-        File f = new File(filename);
-        FileInputStream fis = new FileInputStream(f);
-        DataInputStream dis = new DataInputStream(fis);
-        byte[] keyBytes = new byte[(int) f.length()];
-        dis.readFully(keyBytes);
-        dis.close();
-
-        String temp = new String(keyBytes);
-        String privKeyPEM = temp.replace("-----BEGIN PRIVATE KEY-----\n", "");
-        privKeyPEM = privKeyPEM.replace("-----END PRIVATE KEY-----", "");
-        System.out.println("temp key\n" + temp);
-        System.out.println("Private key\n" + privKeyPEM);
-
-//	      Base64 b64 = new Base64();
-        Base64.Encoder encoder = Base64.getUrlEncoder();
-        // Encoding URL
-        String eStr = encoder.encodeToString(temp.getBytes());
-        System.out.println("Encoded result: " + eStr);
-        // Getting decoder
-        Base64.Decoder decoder = Base64.getUrlDecoder();
-        // Decoding URl
-        String dStr = new String(decoder.decode(eStr));
-        byte[] eq = eStr.getBytes();
-        System.out.println("Decoded result: " + dStr);
-
-        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(eq);
-        KeyFactory kf = KeyFactory.getInstance(algorithm);
-        return kf.generatePrivate(spec);
-    }
-
-
-    //    public static void verifyRSASHA256() {
+//    public static void verifyRSASHA256() {
 //        FileInputStream fm;
 //        try {
 //            fm = new FileInputStream("C:\\Users\\janga\\Documents\\ApiGateway\\result.p12");
@@ -137,10 +137,84 @@ public class KseiValidateAckApplication {
 //    }
 //
 
-    public static void main(String[] args) throws Exception { // Getting encoder
-        getPemPrivateKey("C:\\Users\\janga\\Documents\\ApiGateway\\private.pem", "RSA");
 
+public class Test2 {
+    public static void verifyRSASHA256() {
+        FileInputStream fm;
+        try {
+            PrivateKey key = getPemPrivateKey("C:\\Users\\janga\\Documents\\ApiGateway\\Project\\Tokopedia\\tokopedia.pem", "RSA");
+            PublicKey pubKey = getPemPublicey("C:\\Users\\janga\\Documents\\ApiGateway\\Project\\Tokopedia\\tokopedia_public.pem", "RSA");
+
+
+            String data = "00409659120038007618100000";
+            byte[] byteData = data.getBytes("UTF-8");
+            Signature signn = Signature.getInstance("SHA256withRSA");
+
+            signn.initSign(key);
+            signn.update(byteData);
+            byte[] s = signn.sign();
+            String encrypted = Base64.getEncoder().encodeToString(s);
+            System.out.println("encrypted\n" + encrypted);
+
+
+            signn.initVerify(pubKey);
+            signn.update(byteData);
+            System.out.println(signn.verify(s));
+
+
+        } catch (Exception e) {
+            System.out.println(e);
+            e.printStackTrace();
+        }
     }
 
 
+    public static PrivateKey getPemPrivateKey(String filename, String algorithm) throws Exception {
+        File f = new File(filename);
+        FileInputStream fis = new FileInputStream(f);
+        DataInputStream dis = new DataInputStream(fis);
+        byte[] keyBytes = new byte[(int) f.length()];
+        dis.readFully(keyBytes);
+        dis.close();
+
+        String temp = new String(keyBytes);
+        String privKeyPEM = temp.replace("-----BEGIN PRIVATE KEY-----", "");
+        privKeyPEM = privKeyPEM.replace("-----END PRIVATE KEY-----", "").replace("\n", "");
+        System.out.println("Private key\n" + privKeyPEM);
+
+        byte[] decoded = Base64.getDecoder().decode(privKeyPEM);
+
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(decoded);
+        KeyFactory kf = KeyFactory.getInstance(algorithm);
+        return kf.generatePrivate(spec);
+    }
+
+
+    public static PublicKey getPemPublicey(String filename, String algorithm) throws Exception {
+        File f = new File(filename);
+        FileInputStream fis = new FileInputStream(f);
+        DataInputStream dis = new DataInputStream(fis);
+        byte[] keyBytes = new byte[(int) f.length()];
+        dis.readFully(keyBytes);
+        dis.close();
+
+        String temp = new String(keyBytes);
+        String privKeyPEM = temp.replace("-----BEGIN PUBLIC KEY-----", "");
+        privKeyPEM = privKeyPEM.replace("-----END PUBLIC KEY-----", "").replace("\n", "");
+        System.out.println("Public key\n" + privKeyPEM);
+
+        byte[] decoded = Base64.getDecoder().decode(privKeyPEM);
+
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(decoded);
+        return keyFactory.generatePublic(keySpec);
+    }
+
+    public static void main(String[] args) throws Exception {
+        verifyRSASHA256();
+    }
+
 }
+
+
+
